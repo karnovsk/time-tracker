@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>מעקב זמן</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 500px;
+            width: 100%;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 28px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        input[type="number"] {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            opacity: 1;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 10px;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+
+        .chart-container {
+            margin-top: 30px;
+            display: none;
+        }
+
+        .chart-container.show {
+            display: block;
+        }
+
+        canvas {
+            max-width: 100%;
+        }
+
+        .error-message {
+            color: #e74c3c;
+            font-size: 14px;
+            margin-top: 10px;
+            text-align: center;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        .chart-type-selector {
+            margin-top: 20px;
+            display: none;
+        }
+
+        .chart-type-selector.show {
+            display: block;
+        }
+
+        .chart-type-selector label {
+            margin-bottom: 8px;
+        }
+
+        select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            background-color: white;
+            cursor: pointer;
+            transition: border-color 0.3s;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .share-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .share-btn.show {
+            display: block;
+        }
+
+        .share-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(240, 147, 251, 0.4);
+        }
+
+        .share-btn:active {
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>מעקב זמן</h1>
+
+        <form id="timeForm">
+            <div class="input-group">
+                <label for="task1">פנאי מזדמן (שעות)</label>
+                <input type="number" id="task1" min="0" step="1" required>
+            </div>
+
+            <div class="input-group">
+                <label for="task2">פנאי רציני (שעות)</label>
+                <input type="number" id="task2" min="0" step="1" required>
+            </div>
+
+            <div class="input-group">
+                <label for="task3">פנאי פרויקט (שעות)</label>
+                <input type="number" id="task3" min="0" step="1" required>
+            </div>
+
+            <button type="submit" class="submit-btn">צור תרשים</button>
+            <div class="error-message" id="errorMessage"></div>
+        </form>
+
+        <div class="chart-type-selector" id="chartTypeSelector">
+            <label for="chartType">בחר סוג תרשים</label>
+            <select id="chartType">
+                <option value="pie">תרשים עוגה</option>
+                <option value="bar">תרשים עמודות</option>
+            </select>
+        </div>
+
+        <div class="chart-container" id="chartContainer">
+            <canvas id="pieChart"></canvas>
+        </div>
+
+        <button id="shareBtn" class="share-btn">שתף תמונת מצב</button>
+    </div>
+
+    <script>
+        let myChart = null;
+        let currentData = { task1: 0, task2: 0, task3: 0 };
+
+        function createChart() {
+            const task1 = currentData.task1;
+            const task2 = currentData.task2;
+            const task3 = currentData.task3;
+            const chartType = document.getElementById('chartType').value;
+
+            const total = task1 + task2 + task3;
+            const percentage1 = ((task1 / total) * 100).toFixed(1);
+            const percentage2 = ((task2 / total) * 100).toFixed(1);
+            const percentage3 = ((task3 / total) * 100).toFixed(1);
+
+            // Destroy previous chart if it exists
+            if (myChart) {
+                myChart.destroy();
+            }
+
+            // Create new chart
+            const ctx = document.getElementById('pieChart').getContext('2d');
+
+            if (chartType === 'pie') {
+                myChart = new Chart(ctx, {
+                    type: 'pie',
+                    data: {
+                        labels: [
+                            `פנאי מזדמן (${percentage1}%)`,
+                            `פנאי רציני (${percentage2}%)`,
+                            `פנאי פרויקט (${percentage3}%)`
+                        ],
+                        datasets: [{
+                            data: [task1, task2, task3],
+                            backgroundColor: [
+                                '#667eea',
+                                '#764ba2',
+                                '#f093fb'
+                            ],
+                            borderColor: '#ffffff',
+                            borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    padding: 15,
+                                    font: {
+                                        size: 14
+                                    }
+                                }
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return context.label + ': ' + context.parsed + ' שעות';
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            } else {
+                myChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['פנאי מזדמן', 'פנאי רציני', 'פנאי פרויקט'],
+                        datasets: [{
+                            label: 'שעות',
+                            data: [task1, task2, task3],
+                            backgroundColor: [
+                                '#667eea',
+                                '#764ba2',
+                                '#f093fb'
+                            ],
+                            borderColor: [
+                                '#667eea',
+                                '#764ba2',
+                                '#f093fb'
+                            ],
+                            borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    stepSize: 1
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return context.parsed.y + ' שעות';
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        document.getElementById('timeForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const task1 = parseInt(document.getElementById('task1').value);
+            const task2 = parseInt(document.getElementById('task2').value);
+            const task3 = parseInt(document.getElementById('task3').value);
+
+            const errorMessage = document.getElementById('errorMessage');
+
+            // Validate inputs
+            if (isNaN(task1) || isNaN(task2) || isNaN(task3)) {
+                errorMessage.textContent = 'נא להזין מספרים תקינים בכל השדות';
+                errorMessage.classList.add('show');
+                return;
+            }
+
+            if (task1 < 0 || task2 < 0 || task3 < 0) {
+                errorMessage.textContent = 'נא להזין מספרים חיוביים';
+                errorMessage.classList.add('show');
+                return;
+            }
+
+            const total = task1 + task2 + task3;
+
+            if (total === 0) {
+                errorMessage.textContent = 'לפחות ערך אחד חייב להיות גדול מ-0';
+                errorMessage.classList.add('show');
+                return;
+            }
+
+            errorMessage.classList.remove('show');
+
+            // Store current data
+            currentData = { task1, task2, task3 };
+
+            // Show chart type selector and chart container
+            document.getElementById('chartTypeSelector').classList.add('show');
+            document.getElementById('chartContainer').classList.add('show');
+            document.getElementById('shareBtn').classList.add('show');
+
+            // Create chart
+            createChart();
+        });
+
+        // Add event listener for chart type change
+        document.getElementById('chartType').addEventListener('change', function() {
+            if (currentData.task1 !== 0 || currentData.task2 !== 0 || currentData.task3 !== 0) {
+                createChart();
+            }
+        });
+
+        // Add event listener for share button
+        document.getElementById('shareBtn').addEventListener('click', function() {
+            const canvas = document.getElementById('pieChart');
+
+            canvas.toBlob(function(blob) {
+                const chartType = document.getElementById('chartType').value === 'pie' ? 'עוגה' : 'עמודות';
+                const fileName = `תרשים-${chartType}-${Date.now()}.png`;
+
+                // Check if Web Share API is available
+                if (navigator.share && navigator.canShare && navigator.canShare({ files: [new File([blob], fileName, { type: 'image/png' })] })) {
+                    const file = new File([blob], fileName, { type: 'image/png' });
+                    navigator.share({
+                        files: [file],
+                        title: 'מעקב זמן',
+                        text: 'תרשים מעקב זמן שלי'
+                    }).catch(err => {
+                        console.log('Error sharing:', err);
+                        // Fallback to download if sharing fails
+                        downloadImage(blob, fileName);
+                    });
+                } else {
+                    // Fallback to download
+                    downloadImage(blob, fileName);
+                }
+            });
+        });
+
+        function downloadImage(blob, fileName) {
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = fileName;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }
+
+        // Only allow integers in number inputs
+        document.querySelectorAll('input[type="number"]').forEach(input => {
+            input.addEventListener('keypress', function(e) {
+                // Only allow numbers
+                if (e.key < '0' || e.key > '9') {
+                    e.preventDefault();
+                }
+            });
+
+            input.addEventListener('input', function(e) {
+                // Remove any decimal points
+                this.value = this.value.replace(/[^0-9]/g, '');
+            });
+        });
+    </script>
+</body>
+</html>
