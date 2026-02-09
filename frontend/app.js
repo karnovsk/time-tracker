@@ -1,5 +1,5 @@
 // Configuration
-const API_URL = 'http://localhost:8000/api/v1';
+const API_URL = 'https://time-tracker-1-3vqh.onrender.com/api/v1';
 
 // State
 let accessToken = localStorage.getItem('accessToken');
