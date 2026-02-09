@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: timetracker_postgres
+    environment:
+      POSTGRES_DB: timetracker_db
+      POSTGRES_USER: timetracker
+      POSTGRES_PASSWORD: password
+      TZ: UTC
+      PGTZ: UTC
+    command: postgres -c timezone=UTC
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U timetracker"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:

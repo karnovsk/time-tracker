@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>מעקב זמן פנאי</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+</head>
+<body>
+    <!-- Login Screen -->
+    <div id="loginScreen" class="screen">
+        <div class="container">
+            <h1>מעקב זמן פנאי</h1>
+            <div class="card">
+                <h2>התחברות</h2>
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label for="email">כתובת אימייל</label>
+                        <input type="email" id="email" required placeholder="your@email.com">
+                    </div>
+                    <button type="submit" id="sendOtpBtn">שלח קוד אימות</button>
+                </form>
+
+                <form id="verifyForm" style="display: none;">
+                    <div class="form-group">
+                        <label for="otp">קוד אימות</label>
+                        <input type="text" id="otp" required placeholder="000000" maxlength="6">
+                        <small>בדוק את תיבת הדואר האלקטרוני שלך</small>
+                    </div>
+                    <button type="submit" id="verifyBtn">אמת והתחבר</button>
+                    <button type="button" id="backBtn" class="secondary">חזור</button>
+                </form>
+
+                <div id="loginMessage" class="message"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dashboard Screen -->
+    <div id="dashboardScreen" class="screen" style="display: none;">
+        <div class="container">
+            <div class="header">
+                <h1>מעקב זמן פנאי</h1>
+                <div class="user-info">
+                    <span id="userEmail"></span>
+                    <button id="logoutBtn" class="secondary">התנתק</button>
+                </div>
+            </div>
+
+            <!-- Entry Form -->
+            <div class="card" id="entryFormCard">
+                <h2>רישום יומי - <span id="todayDate"></span></h2>
+                <div id="alreadySubmittedMessage" style="display: none;" class="info-message">
+                    <p>כבר שלחת רישום להיום. רישומים הם חד-פעמיים ולא ניתנים לעריכה.</p>
+                    <p style="margin-top: 10px;">ניתן להזין רישום עבור תאריך אחר באמצעות בחירת התאריך למטה.</p>
+                    <div id="todayEntryDisplay"></div>
+                </div>
+
+                <form id="entryForm">
+                    <div class="form-group" style="margin-bottom: 20px;">
+                        <label for="entryDate">תאריך הרישום (אופציונלי)</label>
+                        <input type="date" id="entryDate" style="width: 100%; padding: 10px; font-size: 16px;">
+                        <small style="display: block; margin-top: 5px; color: #666;">השאר ריק להזנת רישום להיום</small>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="casualHours">פנאי מזדמן (שעות)</label>
+                            <input type="number" id="casualHours" min="0" max="24" step="0.1" value="0" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="casualNote">פעילויות</label>
+                            <textarea id="casualNote" placeholder="מה עשית? (טלוויזיה, רשתות חברתיות...)"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="seriousHours">פנאי רציני (שעות)</label>
+                            <input type="number" id="seriousHours" min="0" max="24" step="0.1" value="0" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="seriousNote">פעילויות</label>
+                            <textarea id="seriousNote" placeholder="מה עשית? (ספורט, לימוד, תרגול...)"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="projectHours">פנאי פרויקט (שעות)</label>
+                            <input type="number" id="projectHours" min="0" max="24" step="0.1" value="0" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="projectNote">פעילויות</label>
+                            <textarea id="projectNote" placeholder="מה עשית? (פרויקט אישי, יזמות...)"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="total-hours">
+                        <strong>סה"כ שעות: <span id="totalHours">0</span></strong>
+                    </div>
+
+                    <button type="submit" id="submitEntryBtn">שלח רישום</button>
+                </form>
+
+                <div id="entryMessage" class="message"></div>
+            </div>
+
+            <!-- Statistics Section -->
+            <div class="card">
+                <button id="toggleStatsBtn" class="btn-toggle">הצג סטטיסטיקה</button>
+
+                <div id="statisticsSection" style="display: none;">
+                    <h2 style="text-align: center; color: #667eea; margin-bottom: 20px;">
+                        דוח סטטיסטיקה - <span id="statsUserEmail"></span>
+                    </h2>
+
+                    <!-- Stats Overview -->
+                    <div id="statsOverview" class="stats-grid">
+                        <div class="stat-card">
+                            <h3>פנאי מזדמן</h3>
+                            <div class="stat-value"><span id="casualTotal">0</span> שעות</div>
+                            <div class="stat-avg">ממוצע: <span id="casualAvg">0</span> שעות</div>
+                        </div>
+                        <div class="stat-card">
+                            <h3>פנאי רציני</h3>
+                            <div class="stat-value"><span id="seriousTotal">0</span> שעות</div>
+                            <div class="stat-avg">ממוצע: <span id="seriousAvg">0</span> שעות</div>
+                        </div>
+                        <div class="stat-card">
+                            <h3>פנאי פרויקט</h3>
+                            <div class="stat-value"><span id="projectTotal">0</span> שעות</div>
+                            <div class="stat-avg">ממוצע: <span id="projectAvg">0</span> שעות</div>
+                        </div>
+                        <div class="stat-card highlight">
+                            <h3>סה"כ</h3>
+                            <div class="stat-value"><span id="overallTotal">0</span> שעות</div>
+                            <div class="stat-avg">ממוצע: <span id="overallAvg">0</span> שעות</div>
+                            <div class="stat-entries"><span id="totalEntries">0</span> רישומים</div>
+                        </div>
+                    </div>
+
+                    <!-- Chart Type Selector -->
+                    <div class="chart-controls">
+                        <label for="chartType">סוג תרשים:</label>
+                        <select id="chartType">
+                            <option value="pie">עוגה</option>
+                            <option value="bar">עמודות</option>
+                        </select>
+                    </div>
+
+                    <!-- Chart -->
+                    <div class="chart-container">
+                        <canvas id="statsChart"></canvas>
+                    </div>
+
+                    <!-- Share Button -->
+                    <div style="text-align: center; margin: 20px 0;">
+                        <button id="shareStatsBtn" class="btn-share">📊 שתף סטטיסטיקה</button>
+                    </div>
+
+                    <!-- Entry History Table -->
+                    <div class="history-section">
+                        <h3>היסטוריית רישומים</h3>
+                        <div class="table-container">
+                            <table id="historyTable">
+                                <thead>
+                                    <tr>
+                                        <th>תאריך</th>
+                                        <th>מזדמן</th>
+                                        <th>פעילויות מזדמן</th>
+                                        <th>רציני</th>
+                                        <th>פעילויות רציני</th>
+                                        <th>פרויקט</th>
+                                        <th>פעילויות פרויקט</th>
+                                        <th>סה"כ</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="historyTableBody">
+                                    <!-- Populated by JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="pagination">
+                            <button id="prevPageBtn" disabled>הקודם</button>
+                            <span id="pageInfo">עמוד 1</span>
+                            <button id="nextPageBtn" disabled>הבא</button>
+                        </div>
+                    </div>
+
+                    <!-- Data Reset -->
+                    <div class="danger-zone">
+                        <h3>איפוס נתונים</h3>
+                        <p>מחיקת כל הרישומים שלך (לא ניתן לשחזור!)</p>
+                        <button id="resetDataBtn" class="btn-danger">אפס את כל הנתונים</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
