@@ -12,6 +12,14 @@ class Settings(BaseSettings):
     # Database
     database_url: str
 
+    @property
+    def async_database_url(self) -> str:
+        """Convert database URL to async format (postgresql+asyncpg)."""
+        url = self.database_url
+        if url.startswith("postgresql://"):
+            return url.replace("postgresql://", "postgresql+asyncpg://", 1)
+        return url
+
     # Supabase
     supabase_url: str
     supabase_anon_key: str

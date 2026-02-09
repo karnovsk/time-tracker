@@ -8,7 +8,7 @@ from app.config import settings
 
 # Create async engine
 engine = create_async_engine(
-    settings.database_url,
+    settings.async_database_url,  # Use async URL (postgresql+asyncpg)
     echo=settings.debug,  # Log SQL queries in debug mode
     pool_pre_ping=True,  # Verify connections before using
     pool_size=5,
