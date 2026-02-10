@@ -8,14 +8,12 @@ from sqlalchemy.pool import NullPool
 from app.config import settings
 
 # Create async engine
-# Using direct connection (not pooler), so we can use normal pooling
+# Using pooler with NullPool to avoid prepared statement cache issues with pgbouncer
 engine = create_async_engine(
     settings.async_database_url,  # Use async URL (postgresql+asyncpg)
     echo=settings.debug,  # Log SQL queries in debug mode
-    pool_pre_ping=True,
-    pool_size=5,
-    max_overflow=10,
-    connect_args={"statement_cache_size": 0}  # Disable prepared statements just in case
+    poolclass=NullPool,  # No pooling at SQLAlchemy level (pgbouncer handles it)
+    connect_args={"statement_cache_size": 0}  # Disable prepared statements for pgbouncer
 )
 
 # Session factory
