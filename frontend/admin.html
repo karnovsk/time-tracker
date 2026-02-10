@@ -43,12 +43,34 @@
                 <div id="usersGrid" class="users-grid" style="display: none;"></div>
             </div>
 
-            <!-- Word Cloud -->
+            <!-- Word Clouds -->
             <div class="card">
-                <h2>ענן מילים - פעילויות</h2>
-                <div id="loadingCloud" class="message info-message">טוען ענן מילים...</div>
-                <div id="wordCloudContainer" style="display: none;">
-                    <canvas id="wordCloudCanvas"></canvas>
+                <h2>ענני מילים - פעילויות לפי סוג</h2>
+                <div id="loadingCloud" class="message info-message">טוען ענני מילים...</div>
+                <div id="wordCloudsContainer" class="word-clouds-grid" style="display: none;">
+                    <!-- Casual Leisure Word Cloud -->
+                    <div class="word-cloud-card">
+                        <h3>פנאי מזדמן</h3>
+                        <div class="word-cloud-wrapper">
+                            <canvas id="casualWordCloud"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Serious Leisure Word Cloud -->
+                    <div class="word-cloud-card">
+                        <h3>פנאי רציני</h3>
+                        <div class="word-cloud-wrapper">
+                            <canvas id="seriousWordCloud"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Project Leisure Word Cloud -->
+                    <div class="word-cloud-card">
+                        <h3>פנאי פרויקט</h3>
+                        <div class="word-cloud-wrapper">
+                            <canvas id="projectWordCloud"></canvas>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

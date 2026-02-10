@@ -23,9 +23,13 @@ class UserStatsResponse(BaseModel):
 
 
 class WordCloudResponse(BaseModel):
-    """Word cloud data from all users' notes."""
-    combined_text: str
+    """Word cloud data from all users' notes, separated by leisure type."""
+    casual_text: str
+    serious_text: str
+    project_text: str
     total_entries: int
-    total_notes: int
+    casual_notes_count: int
+    serious_notes_count: int
+    project_notes_count: int
 
     model_config = {"from_attributes": True}

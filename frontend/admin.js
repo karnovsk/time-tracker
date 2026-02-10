@@ -16,8 +16,10 @@ const adminPasswordInput = document.getElementById('adminPassword');
 const passwordMessage = document.getElementById('passwordMessage');
 const usersGrid = document.getElementById('usersGrid');
 const loadingUsers = document.getElementById('loadingUsers');
-const wordCloudCanvas = document.getElementById('wordCloudCanvas');
-const wordCloudContainer = document.getElementById('wordCloudContainer');
+const casualWordCloud = document.getElementById('casualWordCloud');
+const seriousWordCloud = document.getElementById('seriousWordCloud');
+const projectWordCloud = document.getElementById('projectWordCloud');
+const wordCloudsContainer = document.getElementById('wordCloudsContainer');
 const loadingCloud = document.getElementById('loadingCloud');
 const logoutBtn = document.getElementById('logoutBtn');
 
@@ -189,42 +191,49 @@ function createPieChart(canvasId, distribution) {
 }
 
 /**
- * Load word cloud
+ * Load word clouds
  */
 async function loadWordCloud() {
     try {
         loadingCloud.style.display = 'block';
-        wordCloudContainer.style.display = 'none';
+        wordCloudsContainer.style.display = 'none';
 
         const data = await adminApiCall('/word-cloud-data');
 
         loadingCloud.style.display = 'none';
 
-        if (data.total_notes === 0) {
+        const totalNotes = data.casual_notes_count + data.serious_notes_count + data.project_notes_count;
+
+        if (totalNotes === 0) {
             loadingCloud.style.display = 'block';
             loadingCloud.textContent = 'אין פעילויות לתצוגה';
             loadingCloud.className = 'message info-message';
             return;
         }
 
-        wordCloudContainer.style.display = 'block';
-        renderWordCloud(data.combined_text);
+        wordCloudsContainer.style.display = 'grid';
+
+        // Render three separate word clouds
+        renderWordCloud(casualWordCloud, data.casual_text, 'rgba(255, 99, 132, 0.8)');
+        renderWordCloud(seriousWordCloud, data.serious_text, 'rgba(54, 162, 235, 0.8)');
+        renderWordCloud(projectWordCloud, data.project_text, 'rgba(255, 206, 86, 0.8)');
     } catch (error) {
         console.error('Failed to load word cloud:', error);
-        loadingCloud.textContent = 'שגיאה בטעינת ענן מילים';
+        loadingCloud.textContent = 'שגיאה בטעינת ענני מילים';
         loadingCloud.className = 'message error-message';
     }
 }
 
 /**
- * Render word cloud
+ * Render word cloud on a specific canvas
  */
-function renderWordCloud(text) {
+function renderWordCloud(canvas, text, color) {
+    if (!canvas) return;
+
     if (!text || text.trim().length === 0) {
-        loadingCloud.style.display = 'block';
-        loadingCloud.textContent = 'אין טקסט זמין';
-        loadingCloud.className = 'message info-message';
-        wordCloudContainer.style.display = 'none';
+        // Show "no data" message in canvas parent
+        const wrapper = canvas.parentElement;
+        wrapper.innerHTML = '<p style="text-align: center; color: #999; padding: 40px;">אין נתונים</p>';
         return;
     }
 
@@ -234,7 +243,7 @@ function renderWordCloud(text) {
 
     words.forEach(word => {
         word = word.toLowerCase().trim();
-        // Filter short words and common Hebrew stop words
+        // Filter short words
         if (word.length > 2) {
             wordFreq[word] = (wordFreq[word] || 0) + 1;
         }
@@ -243,18 +252,24 @@ function renderWordCloud(text) {
     // Convert to array format for wordcloud2
     const wordList = Object.entries(wordFreq).map(([word, freq]) => [word, freq]);
 
-    // Sort by frequency and take top 100 words
+    // Sort by frequency and take top 50 words per cloud
     wordList.sort((a, b) => b[1] - a[1]);
-    const topWords = wordList.slice(0, 100);
+    const topWords = wordList.slice(0, 50);
+
+    if (topWords.length === 0) {
+        const wrapper = canvas.parentElement;
+        wrapper.innerHTML = '<p style="text-align: center; color: #999; padding: 40px;">אין נתונים</p>';
+        return;
+    }
 
     // Render using wordcloud2.js
     try {
-        WordCloud(wordCloudCanvas, {
+        WordCloud(canvas, {
             list: topWords,
             gridSize: 8,
-            weightFactor: 3,
+            weightFactor: 2,
             fontFamily: 'Arial, sans-serif',
-            color: 'random-dark',
+            color: color,
             rotateRatio: 0.3,
             backgroundColor: '#ffffff',
             drawOutOfBound: false,
@@ -262,9 +277,8 @@ function renderWordCloud(text) {
         });
     } catch (error) {
         console.error('Word cloud rendering error:', error);
-        loadingCloud.style.display = 'block';
-        loadingCloud.textContent = 'שגיאה בהצגת ענן מילים';
-        loadingCloud.className = 'message error-message';
+        const wrapper = canvas.parentElement;
+        wrapper.innerHTML = '<p style="text-align: center; color: #e74c3c; padding: 40px;">שגיאה בהצגת ענן מילים</p>';
     }
 }
 

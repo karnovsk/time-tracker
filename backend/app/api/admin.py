@@ -73,30 +73,36 @@ async def get_word_cloud_data(
 ):
     """
     Get aggregated text from all users' notes for word cloud generation.
+    Separated by leisure type (casual, serious, project).
 
     Requires X-Admin-Password header for authentication.
 
     Returns:
-        Combined text from all note fields across all entries
+        Three separate text strings, one per leisure type
     """
     # Get all entries
     result = await db.execute(select(DailyEntry))
     entries = result.scalars().all()
 
-    # Aggregate all notes
-    all_notes = []
+    # Aggregate notes by category
+    casual_notes = []
+    serious_notes = []
+    project_notes = []
+
     for entry in entries:
         if entry.casual_leisure_note:
-            all_notes.append(entry.casual_leisure_note)
+            casual_notes.append(entry.casual_leisure_note)
         if entry.serious_leisure_note:
-            all_notes.append(entry.serious_leisure_note)
+            serious_notes.append(entry.serious_leisure_note)
         if entry.project_leisure_note:
-            all_notes.append(entry.project_leisure_note)
-
-    combined_text = " ".join(all_notes)
+            project_notes.append(entry.project_leisure_note)
 
     return WordCloudResponse(
-        combined_text=combined_text,
+        casual_text=" ".join(casual_notes),
+        serious_text=" ".join(serious_notes),
+        project_text=" ".join(project_notes),
         total_entries=len(entries),
-        total_notes=len(all_notes)
+        casual_notes_count=len(casual_notes),
+        serious_notes_count=len(serious_notes),
+        project_notes_count=len(project_notes)
     )
