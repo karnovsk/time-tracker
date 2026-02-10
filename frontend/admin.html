@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ממשק ניהול - Time Tracker</title>
+    <link rel="stylesheet" href="styles.css">
+    <!-- Chart.js for pie charts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Word cloud library -->
+    <script src="https://cdn.jsdelivr.net/npm/wordcloud@1.2.2/src/wordcloud2.min.js"></script>
+</head>
+<body>
+    <!-- Password Screen -->
+    <div id="passwordScreen" class="screen">
+        <div class="container">
+            <h1>ממשק ניהול</h1>
+            <div class="card">
+                <h2>הזן סיסמת מנהל</h2>
+                <form id="passwordForm">
+                    <div class="form-group">
+                        <input type="password" id="adminPassword" placeholder="סיסמת מנהל" required>
+                    </div>
+                    <button type="submit">התחבר</button>
+                </form>
+                <div id="passwordMessage" class="message"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Dashboard -->
+    <div id="adminDashboard" class="screen" style="display: none;">
+        <div class="container">
+            <div class="header">
+                <h1>ממשק ניהול</h1>
+                <button id="logoutBtn" class="secondary">התנתק</button>
+            </div>
+
+            <!-- Users Grid -->
+            <div class="card">
+                <h2>סטטיסטיקות משתמשים</h2>
+                <div id="loadingUsers" class="message info-message">טוען נתונים...</div>
+                <div id="usersGrid" class="users-grid" style="display: none;"></div>
+            </div>
+
+            <!-- Word Cloud -->
+            <div class="card">
+                <h2>ענן מילים - פעילויות</h2>
+                <div id="loadingCloud" class="message info-message">טוען ענן מילים...</div>
+                <div id="wordCloudContainer" style="display: none;">
+                    <canvas id="wordCloudCanvas"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="admin.js"></script>
+</body>
+</html>

@@ -5,7 +5,7 @@ Initializes app, CORS, and registers API routes.
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.config import settings
-from app.api import auth, entries, statistics
+from app.api import auth, entries, statistics, admin
 
 # Create FastAPI app
 app = FastAPI(
@@ -28,6 +28,7 @@ app.add_middleware(
 app.include_router(auth.router, prefix="/api/v1")
 app.include_router(entries.router, prefix="/api/v1")
 app.include_router(statistics.router, prefix="/api/v1")
+app.include_router(admin.router, prefix="/api/v1/admin", tags=["Admin"])
 
 # Health check endpoint
 @app.get("/health")

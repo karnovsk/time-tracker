@@ -9,6 +9,7 @@ from typing import Optional
 from app.database import get_db
 from app.models.user import User
 from app.services.auth_service import auth_service
+from app.config import settings
 
 
 async def get_current_user(
@@ -71,3 +72,28 @@ async def get_current_user(
         )
 
     return user
+
+
+async def verify_admin_password(
+    x_admin_password: Optional[str] = Header(None, alias="X-Admin-Password")
+) -> None:
+    """
+    Dependency to verify admin password from custom header.
+
+    Args:
+        x_admin_password: Admin password from X-Admin-Password header
+
+    Raises:
+        HTTPException: 401 if missing, 403 if incorrect
+    """
+    if not x_admin_password:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Missing admin password"
+        )
+
+    if x_admin_password != settings.admin_password:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Invalid admin password"
+        )
