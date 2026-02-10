@@ -4,21 +4,19 @@ Sets up async SQLAlchemy engine and session factory.
 """
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from sqlalchemy.orm import declarative_base
+from sqlalchemy.pool import NullPool
 from app.config import settings
 
 # Create async engine
+# For pgbouncer compatibility: use NullPool and disable prepared statements
 engine = create_async_engine(
     settings.async_database_url,  # Use async URL (postgresql+asyncpg)
     echo=settings.debug,  # Log SQL queries in debug mode
-    pool_pre_ping=True,  # Verify connections before using
-    pool_size=5,
-    max_overflow=10,
-    pool_recycle=300,  # Recycle connections every 5 minutes for pgbouncer
+    poolclass=NullPool,  # Use NullPool for pgbouncer (no connection pooling in SQLAlchemy)
     connect_args={
-        "statement_cache_size": 0,  # Disable prepared statement cache for pgbouncer
+        "statement_cache_size": 0,  # Disable asyncpg prepared statement cache
         "server_settings": {
-            "jit": "off",
-            "timezone": "UTC"
+            "jit": "off"
         }
     }
 )
