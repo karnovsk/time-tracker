@@ -13,8 +13,10 @@ engine = create_async_engine(
     pool_pre_ping=True,  # Verify connections before using
     pool_size=5,
     max_overflow=10,
+    pool_recycle=3600,  # Recycle connections every hour for pgbouncer
     connect_args={
-        "statement_cache_size": 0,  # Disable prepared statements for pgbouncer compatibility
+        "prepared_statement_cache_size": 0,  # Disable prepared statements for pgbouncer
+        "statement_cache_size": 0,  # Also disable statement cache
         "server_settings": {
             "jit": "off",
             "timezone": "UTC"
