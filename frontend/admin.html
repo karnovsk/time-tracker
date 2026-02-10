@@ -7,8 +7,6 @@
     <link rel="stylesheet" href="styles.css">
     <!-- Chart.js for pie charts -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- Word cloud library -->
-    <script src="https://cdn.jsdelivr.net/npm/wordcloud@1.2.2/src/wordcloud2.min.js"></script>
 </head>
 <body>
     <!-- Password Screen -->
@@ -41,37 +39,6 @@
                 <h2>סטטיסטיקות משתמשים</h2>
                 <div id="loadingUsers" class="message info-message">טוען נתונים...</div>
                 <div id="usersGrid" class="users-grid" style="display: none;"></div>
-            </div>
-
-            <!-- Word Clouds -->
-            <div class="card">
-                <h2>ענני מילים - פעילויות לפי סוג</h2>
-                <div id="loadingCloud" class="message info-message">טוען ענני מילים...</div>
-                <div id="wordCloudsContainer" class="word-clouds-grid" style="display: none;">
-                    <!-- Casual Leisure Word Cloud -->
-                    <div class="word-cloud-card">
-                        <h3>פנאי מזדמן</h3>
-                        <div class="word-cloud-wrapper">
-                            <canvas id="casualWordCloud"></canvas>
-                        </div>
-                    </div>
-
-                    <!-- Serious Leisure Word Cloud -->
-                    <div class="word-cloud-card">
-                        <h3>פנאי רציני</h3>
-                        <div class="word-cloud-wrapper">
-                            <canvas id="seriousWordCloud"></canvas>
-                        </div>
-                    </div>
-
-                    <!-- Project Leisure Word Cloud -->
-                    <div class="word-cloud-card">
-                        <h3>פנאי פרויקט</h3>
-                        <div class="word-cloud-wrapper">
-                            <canvas id="projectWordCloud"></canvas>
-                        </div>
-                    </div>
-                </div>
             </div>
         </div>
     </div>
